@@ -6,6 +6,7 @@ using UnityEngine;
 public class Wand : MonoBehaviour
 {
     public Transform Pivot;
+    public Interactable LoadedItem; 
 
     public LayerMask InteractableLayer;
     public float Range = 1000;
@@ -22,14 +23,45 @@ public class Wand : MonoBehaviour
                 
                 // TODO: Check for Interactable Component
                 if(IsAvailable)
-                    MoveObjectToPivot(hit.transform);
+                    LoadItem(hit.transform.GetComponent<Interactable>());
             }
         }            
     }
 
-    private void MoveObjectToPivot(Transform obj)
+    [ContextMenu("Throw")]
+    public void Throw()
     {
-        StartCoroutine(Move(obj, Pivot));
+        var rb = LoadedItem.GetComponent<Rigidbody>();
+        StartCoroutine(ThrowRoutine(rb));
+    }
+
+    private IEnumerator ThrowRoutine(Rigidbody rb)
+    {
+        rb.useGravity = true;
+
+        float duration = 0.5F;
+        var startVelocity = Vector3.zero;
+        var endVelocity = rb.velocity + transform.forward * 10;
+
+        for (float i = 0; i < 1.0F; i += Time.deltaTime / duration)
+        {
+            var val = Vector3.Lerp(startVelocity, endVelocity, i);
+            val.y = rb.velocity.y;
+            rb.velocity = val;
+
+            yield return null;
+        }
+    }
+
+    private void LoadItem(Interactable obj)
+    {
+        StartCoroutine(LoadItemRoutine(obj));
+    }
+
+    private IEnumerator LoadItemRoutine(Interactable obj)
+    {
+        yield return Move(obj.transform, Pivot);
+        LoadedItem = obj;
     }
 
     private IEnumerator Move(Transform obj, Transform target)
