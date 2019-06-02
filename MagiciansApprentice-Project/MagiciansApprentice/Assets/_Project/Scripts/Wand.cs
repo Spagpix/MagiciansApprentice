@@ -15,6 +15,11 @@ public class Wand : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            Throw ();
+        }
+
         if (Input.GetButtonDown("Fire1"))
         {
             if(Physics.Raycast(transform.position, transform.forward, out var hit, Range, InteractableLayer))
@@ -28,29 +33,13 @@ public class Wand : MonoBehaviour
         }            
     }
 
-    [ContextMenu("Throw")]
     public void Throw()
     {
         var rb = LoadedItem.GetComponent<Rigidbody>();
-        StartCoroutine(ThrowRoutine(rb));
-    }
+        rb.velocity = Pivot.forward * 15;
 
-    private IEnumerator ThrowRoutine(Rigidbody rb)
-    {
         rb.useGravity = true;
-
-        float duration = 0.5F;
-        var startVelocity = Vector3.zero;
-        var endVelocity = rb.velocity + transform.forward * 10;
-
-        for (float i = 0; i < 1.0F; i += Time.deltaTime / duration)
-        {
-            var val = Vector3.Lerp(startVelocity, endVelocity, i);
-            val.y = rb.velocity.y;
-            rb.velocity = val;
-
-            yield return null;
-        }
+        rb.isKinematic = false;
     }
 
     private void LoadItem(Interactable obj)
